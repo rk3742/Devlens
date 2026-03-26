@@ -38,7 +38,7 @@ async function ingestRepository({ userId, accessToken, owner, repoName, branch }
 
   // ── 2. Upsert repo record ─────────────────────────────────────────────────
   const pool = getPool();
-  const [repoRows] = await pool.execute(
+  const [insertResult] = await pool.execute(
     `INSERT INTO repositories
        (user_id, github_id, owner, name, full_name, description,
         default_branch, language, is_private, html_url, size_kb, topics, status)
@@ -69,7 +69,7 @@ async function ingestRepository({ userId, accessToken, owner, repoName, branch }
   );
 
   // MySQL returns insertId for INSERT, 0 for ON DUPLICATE KEY UPDATE
-  let repoId = repoRows.insertId;
+  let repoId = insertResult.insertId;
   if (!repoId) {
     const [[existing]] = await pool.execute(
       'SELECT id FROM repositories WHERE user_id = ? AND github_id = ?',

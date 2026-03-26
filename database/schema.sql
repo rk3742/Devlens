@@ -106,3 +106,43 @@ CREATE TABLE IF NOT EXISTS analysis_jobs (
   INDEX idx_job_user (user_id),
   INDEX idx_job_status (status)
 ) ENGINE=InnoDB;
+
+-- ── PR reviews ────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS pr_reviews (
+  id           BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  repo_id      BIGINT UNSIGNED NOT NULL,
+  pull_number  INT UNSIGNED    NOT NULL,
+  pr_title     VARCHAR(512),
+  verdict      ENUM('approve', 'request_changes', 'comment') NOT NULL DEFAULT 'comment',
+  result       LONGTEXT,         -- full JSON review object
+  posted_at    DATETIME,
+  created_at   DATETIME          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_repo_pr (repo_id, pull_number),
+  CONSTRAINT fk_review_repo FOREIGN KEY (repo_id) REFERENCES repositories (id) ON DELETE CASCADE,
+  INDEX idx_review_repo (repo_id)
+) ENGINE=InnoDB;
+
+-- ── Q&A sessions ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS qa_sessions (
+  id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  repo_id    BIGINT UNSIGNED NOT NULL,
+  user_id    BIGINT UNSIGNED NOT NULL,
+  title      VARCHAR(512)    NOT NULL DEFAULT 'New conversation',
+  created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_session_repo FOREIGN KEY (repo_id) REFERENCES repositories (id) ON DELETE CASCADE,
+  CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  INDEX idx_session_repo (repo_id),
+  INDEX idx_session_user (user_id)
+) ENGINE=InnoDB;
+
+-- ── Q&A messages ──────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS qa_messages (
+  id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  session_id BIGINT UNSIGNED NOT NULL,
+  role       ENUM('user', 'assistant') NOT NULL,
+  content    MEDIUMTEXT      NOT NULL,
+  created_at DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_message_session FOREIGN KEY (session_id) REFERENCES qa_sessions (id) ON DELETE CASCADE,
+  INDEX idx_message_session (session_id)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC;

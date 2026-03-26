@@ -64,6 +64,7 @@ async function connectRepo(req, res) {
     success: true,
     data: {
       repoId: result.repoId,
+      fullName: `${owner}/${repo}`,
       fileCount: result.fileCount,
       chunkCount: result.chunkCount,
       message: `Repository ${owner}/${repo} successfully indexed`,

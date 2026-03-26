@@ -11,7 +11,9 @@ const JWT_SECRET = process.env.JWT_SECRET;
  * Expected token payload shape:
  * {
  *   id: number,
- *   email: string,
+ *   username: string,
+ *   email: string|null,        // null if user has no public email on GitHub
+ *   plan: string,
  *   githubAccessToken: string,
  * }
  */

@@ -12,6 +12,10 @@ const rateLimit = require('express-rate-limit');
 const { testConnection } = require('./config/database');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const repoRoutes = require('./routes/repoRoutes');
+const authRoutes = require('./routes/authRoutes');
+const analysisRoutes = require('./routes/analysisRoutes');
+const qaRoutes = require('./routes/qaRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
 const logger = require('./utils/logger');
 
 const app = express();
@@ -53,7 +57,26 @@ app.use('/api', apiLimiter);
 app.get('/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
+app.use('/auth', authRoutes);
 app.use('/api/repos', repoRoutes);
+app.use('/api/analysis', analysisRoutes);
+app.use('/api/qa', qaRoutes);
+
+// Webhook route: capture raw body BEFORE JSON parsing for HMAC-SHA256 verification
+app.use('/webhooks', (req, _res, next) => {
+  let data = [];
+  req.on('data', (chunk) => data.push(chunk));
+  req.on('end', () => {
+    req.rawBody = Buffer.concat(data);
+    // Re-parse body from rawBody so req.body is still populated
+    try {
+      req.body = JSON.parse(req.rawBody.toString('utf8'));
+    } catch {
+      req.body = {};
+    }
+    next();
+  });
+}, webhookRoutes);
 
 // ── 404 + global error handler ────────────────────────────────────────────────
 app.use(notFoundHandler);

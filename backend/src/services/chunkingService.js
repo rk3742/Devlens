@@ -66,7 +66,7 @@ function splitIntoChunks(text, chunkSizeChars = CHUNK_SIZE_CHARS, overlapChars =
 
     chunks.push(text.slice(start, chunkEnd));
 
-    // Next chunk starts with overlap
+    // Next chunk starts with overlap; always advance by at least 1 char
     start = Math.max(chunkEnd - overlapChars, start + 1);
   }
 

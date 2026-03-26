@@ -85,8 +85,8 @@ const EXCLUDED_FILENAMES = new Set([
   '.env.test',
 ]);
 
-const MAX_FILE_SIZE_BYTES = Number(process.env.MAX_FILE_SIZE_BYTES) || 524_288; // 512 KB
-const MAX_FILES_PER_REPO = Number(process.env.MAX_FILES_PER_REPO) || 5_000;
+const MAX_FILE_SIZE_BYTES = (parseInt(process.env.MAX_FILE_SIZE_BYTES, 10) || 0) || 524_288; // 512 KB
+const MAX_FILES_PER_REPO = (parseInt(process.env.MAX_FILES_PER_REPO, 10) || 0) || 5_000;
 
 /**
  * Binary-file detection heuristic: checks if a Buffer contains a null byte

@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Card, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import RepoConnect from '../components/RepoConnect';
 
 /**
  * Dashboard
  *
- * Landing page shown after a user authenticates.
- * Displays the repo connection widget and, once a repo is indexed,
- * shows a summary card.
+ * Props:
+ *   onRepoSelected({repoId, fullName}) – called when a repo is indexed
  */
-function Dashboard() {
+function Dashboard({ onRepoSelected }) {
   const [indexedRepo, setIndexedRepo] = useState(null);
+  const navigate = useNavigate();
 
   function handleConnectSuccess(result) {
     setIndexedRepo(result);
+    onRepoSelected?.({
+      repoId: result.repoId,
+      fullName: result.fullName || `repo #${result.repoId}`,
+    });
   }
 
   return (
@@ -44,7 +49,7 @@ function Dashboard() {
                   </Badge>
                 </div>
                 <p className="text-muted small mb-3">{indexedRepo.message}</p>
-                <Row className="g-3 text-center">
+                <Row className="g-3 text-center mb-4">
                   <Col xs={6} md={4}>
                     <div className="p-3 bg-light rounded">
                       <div className="fs-4 fw-bold text-primary">{indexedRepo.fileCount}</div>
@@ -64,6 +69,15 @@ function Dashboard() {
                     </div>
                   </Col>
                 </Row>
+
+                <div className="d-flex gap-2">
+                  <Button variant="primary" size="sm" onClick={() => navigate('/analysis')}>
+                    Run Analysis →
+                  </Button>
+                  <Button variant="outline-primary" size="sm" onClick={() => navigate('/qa')}>
+                    Ask Questions →
+                  </Button>
+                </div>
               </Card.Body>
             </Card>
           )}

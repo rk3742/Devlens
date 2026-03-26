@@ -6,6 +6,42 @@ DevLens AI indexes any GitHub repository and uses Google Gemini to give you inst
 
 ---
 
+## ⚡ TL;DR — Open and Run in 3 Steps
+
+> **Recommended editor:** [VS Code](https://code.visualstudio.com/)
+
+**Step 1 — Clone the repo and open it**
+
+```bash
+git clone https://github.com/rk3742/Devlens.git
+cd Devlens
+code .           # opens the whole project in VS Code
+```
+
+**Step 2 — Set your credentials** (one-time setup)
+
+```bash
+cp backend/.env.example backend/.env
+# Then open backend/.env in your editor and fill in:
+#   GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GEMINI_API_KEY, JWT_SECRET
+```
+
+> See [Prerequisites](#prerequisites) below if you don't have those keys yet.
+
+**Step 3 — Install dependencies and start everything**
+
+```bash
+npm install           # installs the root dev tools (concurrently)
+npm run install:all   # installs backend + frontend node_modules
+npm run dev           # starts backend on :5000 AND frontend on :3000 together
+```
+
+Open your browser at **http://localhost:3000** — you will see the DevLens login page. ✅
+
+> **Need a database?** The easiest path is Docker: `docker-compose up db` starts MySQL alone, or `docker-compose up --build` starts the whole stack. See [Quick Start (Docker)](#-quick-start-docker) below.
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
@@ -58,9 +94,14 @@ Devlens/
 ## 🚀 Quick Start (Docker)
 
 ### Prerequisites
-- Docker & Docker Compose
-- A [GitHub OAuth App](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app)
-- A [Google Gemini API key](https://aistudio.google.com/app/apikey)
+
+Before you can run DevLens AI you need three things:
+
+| Prerequisite | Where to get it | Takes ~2 min |
+|---|---|---|
+| **GitHub OAuth App** | [github.com → Settings → Developer settings → OAuth Apps → New](https://github.com/settings/developers) | Set callback URL to `http://localhost:5000/auth/github/callback` |
+| **Google Gemini API key** | [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) | Free tier is sufficient |
+| **MySQL 8** | Install locally _or_ use `docker-compose up db` (no local MySQL needed) | Docker is the easiest option |
 
 ### 1. Clone and configure
 
@@ -107,25 +148,70 @@ docker-compose up --build
 
 ## 🔧 Manual Setup (without Docker)
 
-### Backend
+This is the recommended approach for active development.
+
+### Recommended editor: VS Code
+
+1. Install [VS Code](https://code.visualstudio.com/) and open the project root:
+   ```bash
+   code /path/to/Devlens
+   ```
+2. Use VS Code's **integrated terminal** (`Ctrl+`` ` `` or `Terminal → New Terminal`) — you can split it into two panes: one for the backend, one for the frontend.
+3. Suggested VS Code extensions:
+   - **ESLint** (`dbaeumer.vscode-eslint`)
+   - **Prettier** (`esbenp.prettier-vscode`)
+   - **REST Client** (`humao.rest-client`) – for testing API endpoints directly in VS Code
+
+---
+
+### Step-by-step
+
+#### 1 — Database (MySQL 8)
+
+Option A – Docker (recommended, no local MySQL needed):
+```bash
+docker-compose up db -d      # starts MySQL on localhost:3306 in background
+```
+
+Option B – Local MySQL:
+```bash
+mysql -u root -p < database/schema.sql
+```
+
+#### 2 — Backend (Express.js API on port 5000)
 
 ```bash
 cd backend
-cp .env.example .env
-# Fill in .env with your credentials
+cp .env.example .env         # copy the template
+# Open .env and fill in: GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET,
+#                          GEMINI_API_KEY, JWT_SECRET (all required)
 npm install
-# Apply the DB schema first (requires a running MySQL 8 instance):
-mysql -u root -p < ../database/schema.sql
-npm run dev      # starts with nodemon on port 5000
+npm run dev                  # starts with nodemon – auto-restarts on save
 ```
 
-### Frontend
+You should see:
+```
+[DevLens] Server running on port 5000
+[DevLens] Database connection pool ready
+```
 
+#### 3 — Frontend (React app on port 3000)
+
+Open a **second terminal** (keep the backend running):
 ```bash
 cd frontend
-cp .env.example .env   # optional – CRA proxy handles /api in dev
 npm install
-npm start        # starts on port 3000, proxies /api to localhost:5000
+npm start                    # opens http://localhost:3000 in your browser automatically
+```
+
+> The CRA dev proxy forwards all `/api/*` and `/auth/*` requests to `http://localhost:5000` — no extra config needed.
+
+#### 4 — Run both at once (shortcut)
+
+From the **project root** (after completing step 2 setup):
+```bash
+npm install           # installs concurrently dev dependency
+npm run dev           # starts backend + frontend simultaneously with colour-coded output
 ```
 
 ### Tests (backend)

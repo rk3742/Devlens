@@ -181,4 +181,51 @@ async function getRepoSummary(repoId, userId) {
   return repo || null;
 }
 
-module.exports = { ingestRepository, getRepoSummary };
+/**
+ * Returns all repositories for a user, sorted by most recently updated.
+ *
+ * @param {number} userId
+ * @returns {Promise<Array>}
+ */
+async function listUserRepos(userId) {
+  const pool = getPool();
+  const [rows] = await pool.execute(
+    `SELECT r.id, r.owner, r.name, r.full_name, r.description, r.language,
+            r.is_private, r.status, r.indexed_at, r.updated_at,
+            COUNT(DISTINCT f.id) AS file_count,
+            COUNT(c.id)          AS chunk_count
+     FROM repositories r
+     LEFT JOIN repo_files  f ON f.repo_id = r.id
+     LEFT JOIN file_chunks c ON c.repo_id = r.id
+     WHERE r.user_id = ?
+     GROUP BY r.id
+     ORDER BY r.updated_at DESC`,
+    [userId]
+  );
+  return rows;
+}
+
+/**
+ * Returns all AI-generated PR reviews for a repository.
+ *
+ * @param {number} repoId
+ * @param {number} userId
+ * @returns {Promise<Array>}
+ */
+async function listPRReviews(repoId, userId) {
+  const pool = getPool();
+  const [rows] = await pool.execute(
+    `SELECT pr.id, pr.pull_number, pr.pr_title, pr.verdict, pr.result, pr.posted_at, pr.created_at
+     FROM pr_reviews pr
+     JOIN repositories r ON r.id = pr.repo_id
+     WHERE pr.repo_id = ? AND r.user_id = ?
+     ORDER BY pr.created_at DESC`,
+    [repoId, userId]
+  );
+  return rows.map((row) => ({
+    ...row,
+    result: row.result ? JSON.parse(row.result) : null,
+  }));
+}
+
+module.exports = { ingestRepository, getRepoSummary, listUserRepos, listPRReviews };

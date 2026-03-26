@@ -26,6 +26,7 @@ function Navbar() {
               <Nav.Link as={Link} to="/">Dashboard</Nav.Link>
               <Nav.Link as={Link} to="/analysis">Analysis</Nav.Link>
               <Nav.Link as={Link} to="/qa">Q&amp;A</Nav.Link>
+              <Nav.Link as={Link} to="/pr-reviews">PR Reviews</Nav.Link>
             </Nav>
           )}
 

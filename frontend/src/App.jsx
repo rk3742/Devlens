@@ -9,19 +9,31 @@ import LoginPage from './pages/LoginPage';
 import AuthCallback from './pages/AuthCallback';
 import AnalysisPage from './pages/AnalysisPage';
 import QAPage from './pages/QAPage';
+import PRReviewsPage from './pages/PRReviewsPage';
 
 /**
- * ProtectedRoute – redirects unauthenticated users to /login.
+ * ProtectedRoute – shows a centred spinner while auth is resolving, then
+ * redirects unauthenticated users to /login.
  */
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return null; // or a full-page spinner
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading…</span>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
 /**
- * AppShell – holds shared state (selected repo) so AnalysisPage and QAPage
+ * AppShell – holds shared state (selected repo) so all feature pages
  * can receive it without a full state manager.
  */
 function AppShell() {
@@ -60,6 +72,18 @@ function AppShell() {
           element={
             <ProtectedRoute>
               <QAPage
+                repoId={selectedRepo?.repoId}
+                repoFullName={selectedRepo?.fullName}
+              />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/pr-reviews"
+          element={
+            <ProtectedRoute>
+              <PRReviewsPage
                 repoId={selectedRepo?.repoId}
                 repoFullName={selectedRepo?.fullName}
               />

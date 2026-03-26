@@ -90,9 +90,32 @@ async function getRepo(req, res) {
   return res.status(200).json({ success: true, data: repo });
 }
 
+/**
+ * GET /api/repos
+ *
+ * Returns all repositories indexed by the authenticated user.
+ */
+async function listRepos(req, res) {
+  const repos = await repoService.listUserRepos(req.user.id);
+  return res.status(200).json({ success: true, data: repos });
+}
+
+/**
+ * GET /api/repos/:repoId/pr-reviews
+ *
+ * Returns all AI-generated PR reviews for a repository.
+ */
+async function listPRReviews(req, res) {
+  const repoId = Number(req.params.repoId);
+  const reviews = await repoService.listPRReviews(repoId, req.user.id);
+  return res.status(200).json({ success: true, data: reviews });
+}
+
 module.exports = {
   connectRepo,
   getRepo,
+  listRepos,
+  listPRReviews,
   repoBodyValidators,
   validateRequest,
 };

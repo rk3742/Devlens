@@ -1,0 +1,13 @@
+# Root level
+*.log
+.DS_Store
+
+# Backend
+backend/node_modules/
+backend/.env
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+frontend/.env
+frontend/.env.local

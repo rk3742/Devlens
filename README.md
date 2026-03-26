@@ -121,10 +121,18 @@ Required variables (in your root `.env`):
 ```env
 GITHUB_CLIENT_ID=your_github_oauth_app_client_id
 GITHUB_CLIENT_SECRET=your_github_oauth_app_client_secret
-GITHUB_WEBHOOK_SECRET=a_random_secret_for_webhook_hmac
+GITHUB_WEBHOOK_SECRET=a_long_random_string_you_create_yourself
 GEMINI_API_KEY=your_google_gemini_api_key
 JWT_SECRET=a_long_random_string_for_jwt_signing
 ```
+
+> **What is `GITHUB_WEBHOOK_SECRET`?**
+> It is a secret string that **you create yourself** — GitHub does not issue it.
+> You choose any long random value (generate one with `openssl rand -hex 32`), set it here,
+> and then paste the **same value** into the **Secret** field when you add a webhook in your
+> GitHub repository settings (Settings → Webhooks → Add webhook).
+> GitHub uses it to sign every payload it sends; DevLens verifies the signature so it only
+> processes genuine payloads. See the [PR Auto-Review Setup](#-pr-auto-review-setup) section below.
 
 ### 2. Set up your GitHub OAuth App
 
@@ -271,12 +279,37 @@ cd backend && npm test
 
 ## 🤖 PR Auto-Review Setup
 
+DevLens automatically posts an AI-generated review to every pull request by receiving a GitHub webhook.
+
+### What is the GitHub Webhook Secret?
+
+The **Webhook Secret** (`GITHUB_WEBHOOK_SECRET`) is a string that **you invent** — GitHub does not
+give it to you. You create it once, put it in two places, and GitHub uses it to prove every
+payload it sends is genuine:
+
+| Place | What to do |
+|---|---|
+| Your `.env` file | Set `GITHUB_WEBHOOK_SECRET=<your secret>` |
+| GitHub webhook form | Paste the **same value** into the **Secret** field |
+
+**How to generate a strong secret:**
+
+```bash
+openssl rand -hex 32
+# example output: 4b7e9c3f1a2d8e6b0f5c9a7d3e1b4f8c2d6a0e4b8f3c7a1d5e9b2f6a0c4e8b1f
+```
+
+Copy that output, paste it into your `.env` as `GITHUB_WEBHOOK_SECRET=...`, then paste it again
+into the GitHub webhook Secret field below.
+
+### Steps to enable webhook
+
 1. In your GitHub repository go to **Settings → Webhooks → Add webhook**.
 2. Set **Payload URL** to `https://<your-server>/webhooks/github`.
 3. Set **Content type** to `application/json`.
-4. Set **Secret** to the same value as your `GITHUB_WEBHOOK_SECRET` env var.
-5. Select **Pull requests** events (or "Let me select individual events").
-6. DevLens will automatically post an AI review on every new/updated PR.
+4. Set **Secret** to the same value you put in `GITHUB_WEBHOOK_SECRET`.
+5. Under **Which events**, select **Pull requests** (or "Let me select individual events" → Pull requests).
+6. Click **Add webhook** — DevLens will automatically post an AI review on every new/updated PR.
 
 ---
 

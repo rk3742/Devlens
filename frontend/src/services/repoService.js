@@ -2,9 +2,10 @@ import api from './api';
 
 /**
  * Sends a repository connection + ingestion request to the backend.
+ * Always uses the repository's default branch (main).
  */
-export async function connectRepository({ owner, repo, branch }) {
-  const { data } = await api.post('/repos/connect', { owner, repo, branch });
+export async function connectRepository({ owner, repo }) {
+  const { data } = await api.post('/repos/connect', { owner, repo });
   return data.data;
 }
 

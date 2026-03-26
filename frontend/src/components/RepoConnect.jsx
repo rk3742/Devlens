@@ -13,7 +13,6 @@ import { connectRepository } from '../services/repoService';
  */
 function RepoConnect({ onSuccess }) {
   const [url, setUrl] = useState('');
-  const [branch, setBranch] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -44,7 +43,6 @@ function RepoConnect({ onSuccess }) {
       const result = await connectRepository({
         owner: parsed.owner,
         repo: parsed.repo,
-        branch: branch.trim() || undefined,
       });
       onSuccess?.(result);
     } catch (err) {
@@ -81,23 +79,6 @@ function RepoConnect({ onSuccess }) {
                 required
                 autoFocus
               />
-            </Col>
-
-            <Col xs={12} md={6}>
-              <Form.Label className="fw-medium">
-                Branch{' '}
-                <span className="text-muted fw-normal">(optional)</span>
-              </Form.Label>
-              <Form.Control
-                type="text"
-                placeholder="main"
-                value={branch}
-                onChange={(e) => setBranch(e.target.value)}
-                disabled={loading}
-              />
-              <Form.Text className="text-muted">
-                Leave blank to use the repository's default branch.
-              </Form.Text>
             </Col>
 
             <Col xs={12} className="d-flex align-items-center gap-3 mt-2">
